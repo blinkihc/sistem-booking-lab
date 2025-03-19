@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CONFIG } from '../config/appConfig'
 
 interface JadwalHarian {
   tanggal: string

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useWaktu } from '../context/WaktuContext'
+import { useWaktu } from '../contexts/WaktuContext'
 
 interface JamPelajaran {
   ke: number

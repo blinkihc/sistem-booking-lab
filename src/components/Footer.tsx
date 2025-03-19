@@ -4,9 +4,9 @@ const Footer = () => {
         <div>
           <h2 className="font-bold text-lg">SistemLab</h2>
           <p className="font-light">
-            Sistem Pemesanan Laboratorium Kampus
+            Sistem Peminjaman Lab Komputer UPT SMPN 1 Buay Rawan
           </p>
-          <p>Copyright © {new Date().getFullYear()} - All rights reserved</p>
+          <p>Copyright © {new Date().getFullYear()} - Yusuf Puluco - Tiga Sama Digital</p>
         </div> 
         <div>
           <div className="grid grid-flow-col gap-4">

@@ -1,5 +1,5 @@
 import { LAB_CONFIG, VALIDASI_PEMESANAN } from '../config/labConfig'
-import type { Laboratorium, FilterLab } from '../types/laboratorium'
+import type { Laboratorium } from '../types/laboratorium'
 
 export const useLabConfig = () => {
   // Fungsi untuk mendapatkan badge status
