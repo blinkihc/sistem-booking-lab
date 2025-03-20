@@ -1,90 +1,106 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { toast } from 'react-toastify'
+
+
+interface FormData {
+  username: string
+  password: string
+}
 
 const Login = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { login } = useAuth()
+  const { login: authLogin } = useAuth() // Rename untuk menghindari konflik
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [formData, setFormData] = useState<FormData>({
+    username: '',
+    password: ''
+  })
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
-
-    const formData = new FormData(e.currentTarget)
-    const username = formData.get('username') as string
-    const password = formData.get('password') as string
 
     try {
-      await login({ username, password })
-      const redirectTo = location.state?.from?.pathname || '/'
-      navigate(redirectTo, { replace: true })
-    } catch (err) {
-      setError('Username atau password salah')
+      // Pastikan fungsi login dari useAuth mengembalikan Promise<UserData>
+      const userData = await authLogin(formData.username, formData.password)
+      
+      switch(userData.role) {
+        case 'admin':
+          navigate('/admin/dashboard')
+          toast.success('Selamat datang di Dashboard Admin')
+          break
+        case 'kepala_lab':
+          navigate('/kepala-lab/dashboard')
+          toast.success('Selamat datang di Dashboard Kepala Lab')
+          break
+        default:
+          navigate('/dashboard')
+          toast.success('Selamat datang di Dashboard')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      toast.error('Username atau password salah')
     } finally {
       setLoading(false)
     }
   }
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-base-200 to-base-300 flex items-center justify-center p-4">
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title text-2xl font-bold text-center">Masuk ke SistemLab</h2>
+          <h2 className="card-title text-2xl font-bold text-center justify-center mb-6">
+            Masuk ke Sistem Lab
+          </h2>
           
-          {error && (
-            <div className="alert alert-error">
-              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Username</span>
+                <span className="label-text font-medium">Username</span>
               </label>
               <input
                 type="text"
                 name="username"
-                required
                 className="input input-bordered w-full"
+                value={formData.username}
+                onChange={handleInputChange}
+                required
                 placeholder="Masukkan username"
               />
             </div>
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Password</span>
+                <span className="label-text font-medium">Password</span>
               </label>
               <input
                 type="password"
                 name="password"
-                required
                 className="input input-bordered w-full"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
                 placeholder="Masukkan password"
               />
-              <label className="label">
-                <a href="#" className="label-text-alt link link-hover">
-                  Lupa password?
-                </a>
-              </label>
             </div>
 
-            <div className="form-control mt-6">
-              <button 
-                type="submit" 
-                className={`btn btn-primary w-full ${loading ? 'loading' : ''}`}
-                disabled={loading}
-              >
-                {loading ? 'Memproses...' : 'Masuk'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              className={`btn btn-primary w-full ${loading ? 'loading' : ''}`}
+              disabled={loading}
+            >
+              {loading ? 'Memproses...' : 'Masuk'}
+            </button>
           </form>
         </div>
       </div>

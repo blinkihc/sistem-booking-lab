@@ -7,6 +7,16 @@ interface StatistikData {
   totalGuru: number
 }
 
+interface Peminjaman {
+  id: string
+  tanggal: string
+  namaGuru: string
+  mataPelajaran: string
+  kelas: string
+  jamPelajaran: number[]
+  status: 'menunggu' | 'disetujui' | 'ditolak'
+}
+
 const StatistikPeminjaman = () => {
   const [statistik, setStatistik] = useState<StatistikData>({
     jamMingguIni: 0,
@@ -19,10 +29,13 @@ const StatistikPeminjaman = () => {
   const hitungStatistik = () => {
     setIsLoading(true)
     const dataTersimpan = localStorage.getItem('pemesananLab')
+    
     if (dataTersimpan) {
-      const semuaPeminjaman = JSON.parse(dataTersimpan)
+      const semuaPeminjaman: Peminjaman[] = JSON.parse(dataTersimpan)
+      
+      // Filter hanya peminjaman yang disetujui
       const peminjamanDisetujui = semuaPeminjaman.filter(
-        (p: any) => p.status === 'disetujui'
+        (p) => p.status === 'disetujui'
       )
 
       // Hitung rentang minggu ini
@@ -36,35 +49,56 @@ const StatistikPeminjaman = () => {
       akhirMinggu.setHours(23, 59, 59, 999)
 
       // Filter peminjaman minggu ini
-      const peminjamanMingguIni = peminjamanDisetujui.filter((p: any) => {
+      const peminjamanMingguIni = peminjamanDisetujui.filter((p) => {
         const tanggalPeminjaman = new Date(p.tanggal)
         return tanggalPeminjaman >= awalMinggu && tanggalPeminjaman <= akhirMinggu
       })
 
+      // Hitung jumlah guru unik (menggunakan Set untuk menghindari duplikasi)
+      const guruMingguIni = new Set(peminjamanMingguIni.map(p => p.namaGuru))
+      const totalGuru = new Set(peminjamanDisetujui.map(p => p.namaGuru))
+
       setTimeout(() => {
         setStatistik({
           jamMingguIni: peminjamanMingguIni.reduce(
-            (total: number, p: any) => total + p.jamPelajaran.length, 0
+            (total, p) => total + p.jamPelajaran.length, 
+            0
           ),
           totalJamPemakaian: peminjamanDisetujui.reduce(
-            (total: number, p: any) => total + p.jamPelajaran.length, 0
+            (total, p) => total + p.jamPelajaran.length, 
+            0
           ),
-          guruMingguIni: new Set(
-            peminjamanMingguIni.map((p: any) => p.pengajar)
-          ).size,
-          totalGuru: new Set(
-            peminjamanDisetujui.map((p: any) => p.pengajar)
-          ).size
+          guruMingguIni: guruMingguIni.size,
+          totalGuru: totalGuru.size
         })
         setIsLoading(false)
-      }, 500) // Delay kecil untuk animasi
+      }, 500)
+    } else {
+      // Jika tidak ada data, set statistik ke 0
+      setStatistik({
+        jamMingguIni: 0,
+        totalJamPemakaian: 0,
+        guruMingguIni: 0,
+        totalGuru: 0
+      })
+      setIsLoading(false)
     }
   }
 
+  // Effect untuk memantau perubahan data
   useEffect(() => {
     hitungStatistik()
+    
+    // Tambahkan event listener untuk localStorage
     window.addEventListener('storage', hitungStatistik)
-    return () => window.removeEventListener('storage', hitungStatistik)
+    
+    // Tambahkan interval untuk update otomatis setiap menit
+    const interval = setInterval(hitungStatistik, 60000)
+    
+    return () => {
+      window.removeEventListener('storage', hitungStatistik)
+      clearInterval(interval)
+    }
   }, [])
 
   return (
@@ -114,7 +148,7 @@ const StatistikPeminjaman = () => {
           </div>
         </div>
       </div>
-
+    
       {/* Kartu 3: Guru Minggu Ini */}
       <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
         <div className="card-body">

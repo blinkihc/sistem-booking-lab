@@ -117,6 +117,7 @@ const ApprovalPeminjaman = () => {
                 </ul>
               </div>
 
+
               {/* Tombol Muat Ulang yang sudah ada */}
               <button 
                 onClick={fetchPeminjaman}
@@ -229,7 +230,7 @@ const ApprovalPeminjaman = () => {
               className="btn btn-ghost"
               onClick={() => {
                 setSelectedId(null)
-                setAlasanPenolakan('')
+                setAlasanPenolakan('')  
               }}
             >
               Batal

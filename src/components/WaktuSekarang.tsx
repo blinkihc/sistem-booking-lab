@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { format } from 'date-fns-tz'
+import { id } from 'date-fns/locale'
 
 const WaktuSekarang = () => {
   const [waktu, setWaktu] = useState(new Date())
@@ -11,25 +13,25 @@ const WaktuSekarang = () => {
     return () => clearInterval(interval)
   }, [])
 
-  const formatTanggal = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZoneName: 'short'
-    }
-
-    return date.toLocaleDateString('id-ID', options)
-  }
-
   return (
-    <div className="flex items-center space-x-2">
-      <div className="badge badge-primary">UTC</div>
-      <span className="font-mono">{waktu.toISOString().slice(0, 19).replace('T', ' ')}</span>
+    <div className="flex items-center gap-2 text-base-content/70">
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        className="h-5 w-5" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth="2" 
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
+        />
+      </svg>
+      <span className="font-mono">
+        {format(waktu, 'EEEE, dd MMMM yyyy - HH:mm:ss', { locale: id })}
+      </span>
     </div>
   )
 }

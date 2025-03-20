@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { MATA_PELAJARAN } from '../../constants/pemesanan'
+import { format } from 'date-fns'
+import { id } from 'date-fns/locale'
 
 interface Peminjaman {
   id: string
   tanggal: string
-  pengajar: string
+  namaGuru: string
   kelas: string
   mataPelajaran: string
   jamPelajaran: number[]
@@ -14,34 +16,37 @@ interface Peminjaman {
 }
 
 const TabelPeminjaman = () => {
-  const [peminjamanHariIni, setPeminjamanHariIni] = useState<Peminjaman[]>([])
+  const [peminjamanBulanIni, setPeminjamanBulanIni] = useState<Peminjaman[]>([])
 
-  const updatePeminjamanHariIni = () => {
+  const updatePeminjamanBulanIni = () => {
     const dataTersimpan = localStorage.getItem('pemesananLab')
     if (dataTersimpan) {
       const semuaPeminjaman = JSON.parse(dataTersimpan)
-      const tanggalHariIni = new Date().toLocaleDateString('en-CA')
+      const tahunBulanIni = format(new Date(), 'yyyy-MM')
       
-      // Filter peminjaman yang disetujui dan untuk hari ini
+      // Filter peminjaman yang disetujui dan untuk bulan ini
       const peminjamanDisetujui = semuaPeminjaman.filter(
         (peminjaman: Peminjaman) => 
-          peminjaman.tanggal === tanggalHariIni && 
+          peminjaman.tanggal.startsWith(tahunBulanIni) && 
           peminjaman.status === 'disetujui'
       )
       
-      // Urutkan berdasarkan jam pelajaran
-      const peminjamanTerurut = peminjamanDisetujui.sort((a: Peminjaman, b: Peminjaman) => 
-        Math.min(...a.jamPelajaran) - Math.min(...b.jamPelajaran)
-      )
+      // Urutkan berdasarkan tanggal dan jam pelajaran
+      const peminjamanTerurut = peminjamanDisetujui.sort((a: Peminjaman, b: Peminjaman) => {
+        if (a.tanggal === b.tanggal) {
+          return Math.min(...a.jamPelajaran) - Math.min(...b.jamPelajaran)
+        }
+        return new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime()
+      })
       
-      setPeminjamanHariIni(peminjamanTerurut)
+      setPeminjamanBulanIni(peminjamanTerurut)
     }
   }
 
   useEffect(() => {
-    updatePeminjamanHariIni()
-    window.addEventListener('storage', updatePeminjamanHariIni)
-    return () => window.removeEventListener('storage', updatePeminjamanHariIni)
+    updatePeminjamanBulanIni()
+    window.addEventListener('storage', updatePeminjamanBulanIni)
+    return () => window.removeEventListener('storage', updatePeminjamanBulanIni)
   }, [])
 
   const getNamaMapel = (idMapel: string) => {
@@ -49,25 +54,41 @@ const TabelPeminjaman = () => {
     return mapel ? mapel.nama : idMapel
   }
 
+  // Fungsi format tanggal yang benar menggunakan date-fns
+  const formatTanggal = (tanggal: string) => {
+    return format(new Date(tanggal), 'd MMMM yyyy', { locale: id })
+  }
+
+  // Fungsi untuk mendapatkan nama bulan dan tahun saat ini
+  const getBulanTahunSekarang = () => {
+    return format(new Date(), 'MMMM yyyy', { locale: id })
+  }
+
   return (
     <div className="card bg-base-100 shadow-xl">
       <div className="card-body">
-        <h2 className="card-title">Jadwal Peminjaman Hari Ini</h2>
-        {peminjamanHariIni.length > 0 ? (
+        <h2 className="card-title">
+          Jadwal Pemakaian Lab Bulan {getBulanTahunSekarang()}
+        </h2>
+        {peminjamanBulanIni.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
               <thead>
                 <tr>
+                  <th>Tanggal</th>
                   <th>Jam</th>
                   <th>Kelas</th>
                   <th>Mata Pelajaran</th>
-                  <th>Pengajar</th>
+                  <th>Nama Guru</th>
                   <th>Keterangan</th>
                 </tr>
               </thead>
               <tbody>
-                {peminjamanHariIni.map((peminjaman) => (
+                {peminjamanBulanIni.map((peminjaman) => (
                   <tr key={peminjaman.id}>
+                    <td className="whitespace-nowrap">
+                      {formatTanggal(peminjaman.tanggal)}
+                    </td>
                     <td>
                       <div className="flex flex-wrap gap-1">
                         {peminjaman.jamPelajaran.map(jam => (
@@ -81,7 +102,7 @@ const TabelPeminjaman = () => {
                       <span className="font-medium">{peminjaman.kelas}</span>
                     </td>
                     <td>{getNamaMapel(peminjaman.mataPelajaran)}</td>
-                    <td>{peminjaman.pengajar}</td>
+                    <td>{peminjaman.namaGuru}</td>
                     <td>
                       <span className="text-sm">{peminjaman.keterangan}</span>
                     </td>
@@ -94,10 +115,16 @@ const TabelPeminjaman = () => {
           <div className="text-center py-8">
             <div className="text-4xl mb-2">📅</div>
             <p className="text-base-content/70">
-              Belum ada peminjaman yang disetujui untuk hari ini
+              Belum ada jadwal pemakaian lab untuk bulan ini
             </p>
           </div>
         )}
+
+        {/* Info tambahan */}
+        <div className="mt-4 text-sm text-base-content/70">
+          <p>* Jadwal akan diperbarui secara otomatis saat ada perubahan</p>
+          <p>* Hanya menampilkan peminjaman pemakaian lab yang telah disetujui</p>
+        </div>
       </div>
     </div>
   )
