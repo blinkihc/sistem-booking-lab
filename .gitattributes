@@ -1,0 +1,12 @@
+# Atur line endings secara otomatis untuk semua file teks
+* text=auto
+
+# File yang harus menggunakan LF
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
