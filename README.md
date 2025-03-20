@@ -1,6 +1,6 @@
-# Sistem Booking Laboratorium
+# Sistem Booking Lab Komputer
 
-Sistem manajemen dan pemesanan laboratorium menggunakan React, TypeScript, Tailwind CSS, dan DaisyUI.
+Sistem manajemen dan pemakaian laboratorium menggunakan React, TypeScript, Tailwind CSS, dan DaisyUI.
 
 ## Teknologi yang Digunakan
 
