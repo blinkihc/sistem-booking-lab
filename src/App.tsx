@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import FormPemesanan from './pages/FormPemesanan'
 import Dashboard from './pages/Dashboard'
 import DashboardAdmin from './pages/Admin/DashboardAdmin'
+import PengaturanCetakan from './pages/Admin/PengaturanCetakan'
 import { DashboardKepalaLab } from './pages/KepalaLab/DashboardKepalaLab'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -32,14 +33,17 @@ const App = () => {
         <Route path="/pemesanan/baru" element={<FormPemesanan />} />
 
         {/* Rute terproteksi untuk Admin */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <DashboardAdmin />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Routes>
+              <Route path="dashboard" element={<DashboardAdmin />} />
+              <Route path="pengaturan/cetakan" element={<PengaturanCetakan />} />
+            </Routes>
+          </ProtectedRoute>
+        }
+      />
 
         {/* Rute terproteksi untuk Kepala Lab */}
         <Route

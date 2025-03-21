@@ -1,7 +1,7 @@
 {
   "name": "sistem-booking-lab",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.1.0",
 "type": "module",
 "homepage": "https://blinkihc.github.io/sistem-booking-lab",
 "scripts": {

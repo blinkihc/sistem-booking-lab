@@ -23,6 +23,18 @@ interface FilterState {
   kelas: string
 }
 
+// Tipe data untuk pengaturan cetakan
+interface PengaturanCetakanData {
+  logoSekolah: string
+  namaSekolah: string
+  alamatSekolah: string
+  teleponSekolah: string
+  namaKepalaLab: string
+  nipKepalaLab: string
+  namaKepalaSekolah: string
+  nipKepalaSekolah: string
+}
+
 // Konstanta untuk pagination
 const ITEMS_PER_PAGE = 10
 
@@ -134,22 +146,42 @@ export const DashboardKepalaLab = () => {
   ]
 
   // Handler untuk ekspor PDF
-  const handleEksporPDF = () => {
-    const doc = new jsPDF({
-      format: 'legal',
-      unit: 'mm',
-      orientation: 'landscape'
-    })
+const handleEksporPDF = () => {
+  // Ambil data pengaturan cetakan
+  const pengaturanCetakan = localStorage.getItem('pengaturanCetakan')
+  const dataCetakan: PengaturanCetakanData = pengaturanCetakan 
+    ? JSON.parse(pengaturanCetakan)
+    : {
+        logoSekolah: '',
+        namaSekolah: 'UPT SMP NEGERI 1 BUAY RAWAN',
+        alamatSekolah: 'Jl. Danau Halim Desa Gunung Cahya',
+        teleponSekolah: '(0735) 123456',
+        namaKepalaLab: 'Nama Kepala Lab',
+        nipKepalaLab: '123456789',
+        namaKepalaSekolah: 'Nama Kepala Sekolah',
+        nipKepalaSekolah: '987654321'
+      }
 
-    // Set font default
-    doc.setFont('helvetica')
-    
-    // Kop surat dengan jarak yang sesuai
-    doc.setFontSize(16)
-    doc.text('UPT SMP NEGERI 1 BUAY RAWAN', 149, 20, { align: 'center' })
-    doc.setFontSize(12)
-    doc.text('Jl. Danau Halim Desa Gunung Cahya', 149, 27, { align: 'center' })
-    doc.text('Telepon: (0735) 123456', 149, 34, { align: 'center' })
+  const doc = new jsPDF({
+    format: 'legal',
+    unit: 'mm',
+    orientation: 'landscape'
+  })
+
+  // Set font default
+  doc.setFont('helvetica')
+  
+  // Tambahkan logo jika ada
+  if (dataCetakan.logoSekolah) {
+    doc.addImage(dataCetakan.logoSekolah, 'PNG', 20, 10, 25, 25)
+  }
+  
+  // Kop surat dengan jarak yang sesuai
+  doc.setFontSize(16)
+  doc.text(dataCetakan.namaSekolah, 149, 20, { align: 'center' })
+  doc.setFontSize(12)
+  doc.text(dataCetakan.alamatSekolah, 149, 27, { align: 'center' })
+  doc.text(`Telepon: ${dataCetakan.teleponSekolah}`, 149, 34, { align: 'center' })
     
     // Garis pembatas
     doc.setLineWidth(0.5)
@@ -304,7 +336,7 @@ export const DashboardKepalaLab = () => {
   doc.setFont('helvetica', 'normal')
 
   // Tempat dan tanggal
-  const tempatDanTanggal = `Ciomas, ${new Date().toLocaleDateString('id-ID', {
+  const tempatDanTanggal = `Buay Rawan, ${new Date().toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
@@ -314,21 +346,20 @@ export const DashboardKepalaLab = () => {
   doc.text(tempatDanTanggal, 40, ttdY)
   doc.text('Kepala Laboratorium Komputer', 40, ttdY + 5)
   doc.text('', 40, ttdY + 25) // Spasi untuk tanda tangan
-  doc.text('Nama Kepala Lab', 40, ttdY + 30)
-  doc.text('NIP. 123456789', 40, ttdY + 35)
+  doc.text(dataCetakan.namaKepalaLab, 40, ttdY + 30)
+  doc.text(`NIP. ${dataCetakan.nipKepalaLab}`, 40, ttdY + 35)
 
   // Kolom tanda tangan kanan (Kepala Sekolah)
   doc.text('Mengetahui,', 200, ttdY)
   doc.text('Kepala Sekolah', 200, ttdY + 5)
   doc.text('', 200, ttdY + 25) // Spasi untuk tanda tangan
-  doc.text('Nama Kepala Sekolah', 200, ttdY + 30)
-  doc.text('NIP. 987654321', 200, ttdY + 35)
+  doc.text(dataCetakan.namaKepalaSekolah, 200, ttdY + 30)
+  doc.text(`NIP. ${dataCetakan.nipKepalaSekolah}`, 200, ttdY + 35)
 
   // Tambahkan garis untuk tanda tangan
   doc.setLineWidth(0.5)
   doc.line(40, ttdY + 27, 120, ttdY + 27) // Garis tanda tangan Kepala Lab
   doc.line(200, ttdY + 27, 280, ttdY + 27) // Garis tanda tangan Kepala Sekolah
-
   
     // Simpan PDF
     const namaBulan = filterPencarian.bulan === 'semua' 
